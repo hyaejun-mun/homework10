@@ -174,8 +174,28 @@ void iterativeInorder(Node *node)
 /**
  * textbook: p 225
  */
-void levelOrder(Node *ptr)
-{
+void levelOrder(Node *ptr) // level order 방식: 큐에 추가-> 큐에서 제거하는 노드를 확인하고, 그 동시에
+{						   // 제거하는 노드의 자식 노드들 추가. preorder 방식과 약간 유사.
+	if (ptr == NULL)
+	{
+		printf("There is no tree.\n");
+		return;
+	}
+	enQueue(ptr); // 헤드를 큐에 넣는다.
+	while (1)
+	{
+		ptr = deQueue(); // 확인할 노드를 얻는다.
+		if (ptr)
+		{
+			printf(" [%d] ", ptr->key);
+			if (ptr->left) // 나중에 실행할 노드들을 큐에 추가한다.
+				enQueue(ptr->left);
+			if (ptr->right)
+				enQueue(ptr->right);
+		}
+		else
+			break; // 더 이상 꺼낼 큐의 원소가 없으면, 종료를 의미한다.
+	}
 }
 
 int insert(Node *head, int key)
