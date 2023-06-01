@@ -244,8 +244,88 @@ int insert(Node *head, int key)
 	return 1;
 }
 
-int deleteNode(Node *head, int key)
+int deleteNode(Node *head, int key) // 말단이면 그냥 제거, 중간이면 그 서브트리 원소들을 유지하면서 올림.
 {
+	if (head == NULL) // 트리가 없을 때
+	{
+		printf("There is no tree.\n");
+		return 1;
+	}
+	if (head->left == NULL) // 트리가 비었을 때
+	{
+		printf("Tree is empty.\n");
+		return 1;
+	}
+	Node *find = head->left;
+	Node *parent = NULL;
+	while ((find != NULL) && (find->key != key)) // 다 찾아서 NULL이 되거나, 맞는 노드를 찾거나.
+	{
+		if (find->key != key) // 찾지 못한 경우
+		{
+			parent = find;			// 부모 위치 보관(나중에 노드 제거할 때 부모노드 링크 NULL로 바꿈.).
+			if (find->key > key)	// 입력받은 값이 더 작으면,
+				find = find->left;	// 왼쪽에 있을 것이라 예상.
+			else					// 입력받으 값이 더 크면,
+				find = find->right; // 오른쪽에 있을 것이라 예상.
+		}
+	}				  // 맞는 노드를 찾거나, 모든 노드를 찾으면 종료.
+	if (find == NULL) // 못찾았으면
+	{
+		printf("There is no that key.\n");
+		return 1;
+	}
+	if ((find->left == NULL) && (find->right == NULL)) // 리프노드인 경우
+	{
+		if (parent != NULL) // find가 루트 노드가 아님을 의미.
+		{
+			if (parent->left == find) // find 가리키는 부분 삭제.
+				parent->left == NULL;
+			else
+				parent->right == NULL;
+		}
+		else
+		{
+			head->left == NULL;
+		}
+		free(find);
+		return 0;
+	}
+	if ((find->left == NULL) || (find->right == NULL)) // 자식이 1개. 위에서 둘다 NULL인 경우는 제외.
+	{
+		Node *child;
+		if (find->left != NULL)	 // 왼쪽에 노드를 가지면
+			child = find->left;	 // 왼쪽 노드를 옮기기로 함.
+		else					 // 오른쪽에 노드를 가지면
+			child = find->right; // 오른쪽 노드를 옮기기로 함.
+		if (parent != NULL)		 // 헤드노드가 아니면,
+		{
+			if (parent->left == find) // 왼쪽, 오른쪽에 삽입한다.
+				parent->left = child;
+			else
+				parent->right = child;
+		}
+		else // 헤드노드이면,
+		{
+			head->left = child; // 헤드에 삽입해준다.
+		}
+		free(find); // 찾은 노드를 버린다.
+		return 0;
+	}
+	// 자식이 2개인 경우
+	Node *change = find->left; // 왼쪽 서브트리의 가장 큰 원소를 삽입하기로 한다.
+	parent = find;
+	while (change->right != NULL)
+	{
+		parent = change;
+		change = change->right; // 왼쪽 서브트리에서 가장 큰 노드를 가리키게 한다.
+	}
+	if (change->left == NULL)		  // change가 왼쪽 서브트리를 가질 경우를 고려한다.
+		parent->right = NULL;		  // 없으면, 그냥 NULL 처리해 버려도 된다.
+	else							  // 하지만 있으면,
+		parent->right = change->left; // 나머지들을 부모 노드의 오른쪽에 추가해 주어야 한다.
+	find->key = change->key;		  // find를 지우고 모두 당기는 것보다,
+	free(change);					  // 맨 뒤의 노드와 정보교환한 후 맨 뒤를 지우는 게 편하다.
+	return 0;
 }
 
 void freeNode(Node *ptr)
