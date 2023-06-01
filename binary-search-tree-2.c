@@ -55,11 +55,11 @@ int main()
 
 	do
 	{
-		printf("\n\n");
+		printf("\n\n[----- [Hyaejun mun] [2019015035] -----]\n");
 		printf("----------------------------------------------------------------\n");
 		printf("                   Binary Search Tree #2                        \n");
 		printf("----------------------------------------------------------------\n");
-		printf(" Initialize BST       = z                                       \n");
+		printf(" Initialize BST       = z      Print Stack                  = p \n");
 		printf(" Insert Node          = i      Delete Node                  = d \n");
 		printf(" Recursive Inorder    = r      Iterative Inorder (Stack)    = t \n");
 		printf(" Level Order (Queue)  = l      Quit                         = q \n");
@@ -144,9 +144,9 @@ void recursiveInorder(Node *ptr)
 {
 	if (ptr)
 	{
-		recursiveInorder(ptr->left);
-		printf(" [%d] ", ptr->key);
-		recursiveInorder(ptr->right);
+		recursiveInorder(ptr->left);  // 재귀로 구현하고, inorder 방식이므로 좌->중앙->오른 순으로
+		printf(" [%d] ", ptr->key);	  // 확인한다.
+		recursiveInorder(ptr->right); // ptr이 NULL이면 중단한다.
 	}
 }
 
@@ -155,6 +155,20 @@ void recursiveInorder(Node *ptr)
  */
 void iterativeInorder(Node *node)
 {
+	while (1) // 더이상 탐색할 노드가 없으면 종료한다.
+	{
+		for (; node; node = node->left) // 왼쪽 자식노드로 이동하면서 경로를 스택에 저장한다.
+			push(node);
+		node = pop();				 // 다음 확인할 노드로 이동한다.
+									 // 왼쪽 노드가 모두 비어 있으면, 맨 마지막 왼쪽 노드일 것이고,
+									 // 이 구간에서 탐색을 모두 완료한 것이면 부모 노드가 될 것이다.
+		if (node == NULL)			 // 만일 node가 NULL이라면, pop에 실패했다는 것이므로
+			return;					 // 더 이상 조사할 노드가 없음을 의미한다.
+		printf(" [%d] ", node->key); // 확인한 노드를 출력한다.
+		node = node->right;			 // 오른쪽 서브트리를 확인한다. 비어 있으면 NULL이 되어서
+									 // 다음 반복 시 push 없이 pop만 하여 부모 노드를 탐색하게 될 것이고,
+									 // 비어 있지 않으면 다시 왼쪽 노드들을 스택에 추가해 가며 연산할 것이다.
+	}
 }
 
 /**
@@ -243,16 +257,47 @@ int freeBST(Node *head)
 
 Node *pop()
 {
-}
+	if (top < 0)	 // 스택이 비어있으면, 뺄 수 없음.
+		return NULL; // NULL을 출력
+	return stack[top--];
+} // 스택이 비어있지 않으면, 맨 위 값을 빼고 스택 크기를 하나 줄임.
 
 void push(Node *aNode)
 {
+	if (top >= MAX_STACK_SIZE - 1) // 스택이 가득 차있으면(top이 19보다 크면)
+		return;					   // 스택에 넣을 수 없다.
+	stack[++top] = aNode;		   // 그게 아니면, 스택에 값을 넣는다.
 }
 
 Node *deQueue()
 {
+	if (front == rear) // 큐가 비어 있으면, 값을 빼낼 수 없음.
+		return NULL;
+	front = (front + 1) % MAX_QUEUE_SIZE; // front는 0~19 사이임을 기억하기.
+	return queue[front];				  // 값을 빼내고, front값이 1 앞당겨졌다.
 }
 
 void enQueue(Node *aNode)
 {
+	rear = (rear + 1) % MAX_QUEUE_SIZE; // rear이 1 증가한다.(추가)
+										// rear은 0~19 사이임을 기억하기.
+	if (front == rear)					// 큐가 가득 차있으면(rear에서 1 더 가면 front이면)
+		return;							// 스택에 넣을 수 없다.
+	queue[rear] = aNode;
+}
+
+void printStack()
+{
+	if (top == -1) // 스택이 비었으면 출력하지 않는다.
+	{
+		printf("stack is empty.");
+		return;
+	}
+	int i = 0;
+	printf("stack\n");
+	while (i <= top) // while문을 이용해 하나하나 프린트한다.
+	{
+		printf("stack[%d] = %d\n", i, stack[i]->key);
+		i++;
+	}
 }
